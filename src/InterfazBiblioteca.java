@@ -6,179 +6,315 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class InterfazBiblioteca extends JFrame {
+
     private Biblioteca biblioteca;
 
-    private JTextField txtTitulo, txtAutor, txtCodigo, txtPublicacion, txtCopias, txtFiltroAutor;
-    public JComboBox<String> cbGenero;
+    private JTextField txtTitulo;
+    private JTextField txtAutor;
+    private JTextField txtCodigo;
+    private JTextField txtPublicacion;
+    private JTextField txtCopias;
+    private JTextField txtFiltroAutor;
+
+    private JComboBox<String> cbGenero;
+
     private JTable tablaLibros;
     private DefaultTableModel modeloTabla;
 
-    public InterfazBiblioteca() {
-        biblioteca = new Biblioteca();
 
-        setTitle("Sistemas de Gestion de Biblioteca - San Rafael");
+    public InterfazBiblioteca(Biblioteca biblioteca) {
+
+        this.biblioteca = biblioteca;
+
+        setTitle("Sistema de Gestion de Biblioteca");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout());
 
-        JPanel panelFormulario = new JPanel(new GridLayout(7, 2, 5, 5));
-        panelFormulario.setBorder(BorderFactory.createTitledBorder("Registrar Buevo libro"));
+        JPanel panelFormulario = new JPanel(new GridLayout(7, 2));
+
+        panelFormulario.setBorder(
+                BorderFactory.createTitledBorder("Registrar libro")
+        );
 
         panelFormulario.add(new JLabel("Titulo:"));
+
         txtTitulo = new JTextField();
         panelFormulario.add(txtTitulo);
 
         panelFormulario.add(new JLabel("Autor:"));
+
         txtAutor = new JTextField();
         panelFormulario.add(txtAutor);
 
         panelFormulario.add(new JLabel("Codigo:"));
+
         txtCodigo = new JTextField();
         panelFormulario.add(txtCodigo);
 
         panelFormulario.add(new JLabel("Genero:"));
-        cbGenero = new JComboBox<String>(biblioteca.getGeneros());
+
+        cbGenero = new JComboBox<>(biblioteca.getGeneros());
         panelFormulario.add(cbGenero);
 
-        panelFormulario.add(new JLabel("Año de Publicacion:"));
+        panelFormulario.add(new JLabel("Año:"));
+
         txtPublicacion = new JTextField();
         panelFormulario.add(txtPublicacion);
 
-        panelFormulario.add(new JLabel("Copias disponibles:"));
+        panelFormulario.add(new JLabel("Copias:"));
+
         txtCopias = new JTextField();
         panelFormulario.add(txtCopias);
 
-        JButton btnGuardar = new JButton("Guardar libro");
+        JButton btnGuardar = new JButton("Guardar");
         panelFormulario.add(btnGuardar);
 
         add(panelFormulario, BorderLayout.WEST);
 
-        String[] columnas = {"Código", "Título", "Autor", "Género", "Año", "Copias"};
+        String[] columnas = {
+                "Codigo",
+                "Titulo",
+                "Autor",
+                "Genero",
+                "Año",
+                "Copias"
+        };
+
         modeloTabla = new DefaultTableModel(columnas, 0);
+
         tablaLibros = new JTable(modeloTabla);
+
         add(new JScrollPane(tablaLibros), BorderLayout.CENTER);
 
-        JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelFiltro.add(new JLabel("Diltrar por Autor:"));
+        JPanel panelFiltro = new JPanel();
+
+        panelFiltro.add(new JLabel("Autor:"));
+
         txtFiltroAutor = new JTextField(15);
         panelFiltro.add(txtFiltroAutor);
 
         JButton btnFiltrar = new JButton("Filtrar");
-        JButton btnRestaurar = new JButton("Ver Todos");
+        JButton btnTodos = new JButton("Ver todos");
+
         panelFiltro.add(btnFiltrar);
-        panelFiltro.add(btnRestaurar);
+        panelFiltro.add(btnTodos);
 
         add(panelFiltro, BorderLayout.NORTH);
 
-        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnEliminar = new JButton("Eliminar linea Seleccionada");
-        panelAcciones.add(btnEliminar);
+        JPanel panelEliminar = new JPanel();
 
-        add(panelAcciones, BorderLayout.SOUTH);
+        JButton btnEliminar = new JButton("Eliminar");
+
+        panelEliminar.add(btnEliminar);
+
+        add(panelEliminar, BorderLayout.SOUTH);
 
         btnGuardar.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                agregarLibroInterfaz();
+
+                agregarLibro();
             }
         });
 
         btnFiltrar.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                String autor = txtFiltroAutor.getText().trim();
+
+                String autor = txtFiltroAutor.getText();
+
                 if (!autor.isEmpty()) {
+
                     actualizarTabla(biblioteca.filtrarAutor(autor));
+
                 } else {
-                    JOptionPane.showMessageDialog(null, "Escriba un autor para filtrar.");
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Escriba un autor."
+                    );
                 }
             }
         });
 
-        btnRestaurar.addActionListener(new ActionListener() {
+        btnTodos.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+
                 txtFiltroAutor.setText("");
-                actualizarTabla(biblioteca.libros);
+
+                actualizarTabla(biblioteca.mostrarTodo());
             }
         });
 
         btnEliminar.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                eliminarLibroInterfaz();
+
+                eliminarLibro();
             }
         });
+
+        actualizarTabla(biblioteca.mostrarTodo());
     }
 
-    private void agregarLibroInterfaz() {
-        if (txtTitulo.getText().isEmpty() || txtAutor.getText().isEmpty() ||
-                txtCodigo.getText().isEmpty() || txtPublicacion.getText().isEmpty() ||
-                txtCopias.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios", "Error", JOptionPane.ERROR_MESSAGE);
+    public void agregarLibro() {
+
+        String titulo = txtTitulo.getText();
+        String autor = txtAutor.getText();
+        String codigo = txtCodigo.getText();
+        String genero = (String) cbGenero.getSelectedItem();
+
+        String publicacionTexto = txtPublicacion.getText();
+        String copiasTexto = txtCopias.getText();
+
+        if (titulo.isEmpty() ||
+                autor.isEmpty() ||
+                codigo.isEmpty() ||
+                publicacionTexto.isEmpty() ||
+                copiasTexto.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Todos los campos son obligatorios."
+            );
+
             return;
         }
+
         try {
-            String titulo = txtTitulo.getText();
-            String autor = txtAutor.getText();
-            String codigo = txtCodigo.getText();
-            String genero = (String) cbGenero.getSelectedItem();
-            int publicacion = Integer.parseInt(txtPublicacion.getText());
-            int copias = Integer.parseInt(txtCopias.getText());
 
-            Libro nuevoLibro = new Libro(titulo, autor, codigo, genero, publicacion, copias);
-            biblioteca.agregarLibros(nuevoLibro);
+            int publicacion = Integer.parseInt(publicacionTexto);
+            int copias = Integer.parseInt(copiasTexto);
 
-            actualizarTabla(biblioteca.libros);
-            limpiarCampos();
-            JOptionPane.showMessageDialog(this, "Libro guarfado exitosamente.");
+            if (publicacion > 2026) {
 
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Año y Copias deben ser valores numéricos enteros.", "Error de formato", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+                JOptionPane.showMessageDialog(
+                        null,
+                        "El año no puede ser mayor a 2026."
+                );
 
-    private void eliminarLibroInterfaz() {
-        int filaSeleccionada = tablaLibros.getSelectedRow();
-        if (filaSeleccionada >= 0) {
-            String codigo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
-
-            int confirmacion = JOptionPane.showConfirmDialog(this,
-                    "¿Está seguro de eliminar el libro con código " + codigo + "?",
-                    "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
-
-            if (confirmacion == JOptionPane.YES_OPTION) {
-                biblioteca.eliminarLibros(codigo);
-                actualizarTabla(biblioteca.libros);
-                JOptionPane.showMessageDialog(this, "Libro eliminado con éxito.");
+                return;
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un libro de la tabla para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+
+            if (copias < 0) {
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Las copias no pueden ser negativas."
+                );
+
+                return;
+            }
+
+            for (Libro libro : biblioteca.mostrarTodo()) {
+
+                if (libro.getCodigo().equals(codigo)) {
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Ese codigo ya existe."
+                    );
+
+                    return;
+                }
+            }
+
+            Libro libro = new Libro(
+                    titulo,
+                    autor,
+                    codigo,
+                    genero,
+                    publicacion,
+                    copias
+            );
+
+            biblioteca.agregarLibros(libro);
+
+            actualizarTabla(biblioteca.mostrarTodo());
+
+            limpiarCampos();
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Libro guardado."
+            );
+
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "El año y las copias deben ser numeros."
+            );
         }
     }
 
-    private void actualizarTabla(ArrayList<Libro> lista) {
+    public void eliminarLibro() {
+
+        int fila = tablaLibros.getSelectedRow();
+
+
+        if (fila == -1) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Seleccione un libro."
+            );
+
+            return;
+        }
+
+        String codigo = (String) modeloTabla.getValueAt(fila, 0);
+
+
+        int respuesta = JOptionPane.showConfirmDialog(
+                null,
+                "¿Desea eliminar este libro?",
+                "Eliminar",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (respuesta == JOptionPane.YES_OPTION) {
+
+            biblioteca.eliminarLibros(codigo);
+
+            actualizarTabla(biblioteca.mostrarTodo());
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Libro eliminado."
+            );
+        }
+    }
+
+    public void actualizarTabla(ArrayList<Libro> lista) {
+
         modeloTabla.setRowCount(0);
-        for (Libro l : lista) {
-            Object[] fila = {
-                    l.getCodigo(),
-                    l.getTitulo(),
-                    l.getAutor(),
-                    l.getGenero(),
-                    l.getPublicacion(),
-                    l.getCopiasDisponibles()
-            };
-            modeloTabla.addRow(fila);
+
+        for (Libro libro : lista) {
+
+            modeloTabla.addRow(new Object[]{
+                    libro.getCodigo(),
+                    libro.getTitulo(),
+                    libro.getAutor(),
+                    libro.getGenero(),
+                    libro.getPublicacion(),
+                    libro.getCopiasDisponibles()
+            });
         }
     }
 
-    private void limpiarCampos() {
+    public void limpiarCampos() {
+
         txtTitulo.setText("");
         txtAutor.setText("");
         txtCodigo.setText("");
         txtPublicacion.setText("");
         txtCopias.setText("");
+
         cbGenero.setSelectedIndex(0);
     }
 }
