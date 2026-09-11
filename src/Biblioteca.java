@@ -53,6 +53,9 @@ public class Biblioteca {
             }
         }
     }
+    public String[] getGeneros() {
+        return genero;
+    }
 }
 
 
