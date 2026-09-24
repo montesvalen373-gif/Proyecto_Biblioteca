@@ -20,7 +20,7 @@ public class Libro {
         return titulo;
 
     }
-    public void setTitulo(){
+    public void setTitulo(String titulo){
         this.titulo = titulo;
 
     }
@@ -28,7 +28,7 @@ public class Libro {
         return autor;
 
     }
-    public void setAutor(){
+    public void setAutor(String autor){
         this.autor = autor;
 
     }

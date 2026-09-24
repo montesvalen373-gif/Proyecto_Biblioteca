@@ -82,9 +82,16 @@ public class InterfazBiblioteca extends JFrame {
                 "Copias"
         };
 
-        modeloTabla = new DefaultTableModel(columnas, 0);
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
 
         tablaLibros = new JTable(modeloTabla);
+
+        tablaLibros.getTableHeader().setReorderingAllowed(false);
 
         add(new JScrollPane(tablaLibros), BorderLayout.CENTER);
 
